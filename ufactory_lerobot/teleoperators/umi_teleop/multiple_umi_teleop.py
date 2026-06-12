@@ -55,9 +55,13 @@ class MultipleUmiTeleop(UFBaseTeleop):
         for teleop in self.teleops.values():
             teleop.disconnect()
 
-    def set_ctrl_status(self, status):
-        for teleop in self.teleops.values():
-            teleop.set_ctrl_status(status)
+    def set_teleop_enabled(self, enabled: bool, obs=None):
+        for key, teleop in self.teleops.items():
+            if obs is not None:
+                teleop_obs = {k: v for k, v in obs.items() if k.startswith(f"{key}.")}
+            else:
+                teleop_obs = None
+            teleop.set_teleop_enabled(enabled, teleop_obs)
 
     def get_action(self) -> dict[str, Any]:
         actions = {}

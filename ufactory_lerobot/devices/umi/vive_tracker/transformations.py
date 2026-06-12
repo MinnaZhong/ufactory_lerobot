@@ -105,7 +105,7 @@ class Transformations:
         return roll, pitch, yaw
     
     @staticmethod
-    def rxryrz_to_matrix(axis_angle):
+    def rxryrz_to_rotation_matrix(axis_angle):
         """
         将轴角向量 (rx, ry, rz) 转换为 3x3 旋转矩阵。
         输入: np.array([rx, ry, rz])
@@ -207,6 +207,14 @@ class Transformations:
         T[:3, 3] = [x, y, z]
         return T
     
+    @classmethod
+    def xyzrxryrz_to_rotation_matrix(cls, x, y, z, rx, ry, rz):
+        """构造4x4齐次变换矩阵"""
+        T = np.eye(4)
+        T[:3, :3] = cls.rxryrz_to_rotation_matrix([rx, ry, rz])
+        T[:3, 3] = [x, y, z]
+        return T
+
     @classmethod
     def rotation_matrix_to_xyzq(cls, rotation_matrix):
         """从4x4齐次变换矩阵到xyzq的转换"""

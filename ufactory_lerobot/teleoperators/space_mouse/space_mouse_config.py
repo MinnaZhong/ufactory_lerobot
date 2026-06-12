@@ -29,3 +29,6 @@ class SpaceMouseTeleopConfig(TeleoperatorConfig):
     frequency: int = 10 # hz
     max_pos_speed: int = 250 # mm/s
     # Others: Calibration angles, joint directions etc.
+
+    def __post_init__(self):
+        self.id = 'spacemouse_teleop' if self.id is None else self.id

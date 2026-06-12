@@ -1,11 +1,12 @@
 import yaml
+import time
 import argparse
 from pathlib import Path
 import ufactory_lerobot # patch
 from lerobot.scripts.lerobot_record import *
 from ufactory_lerobot.teleoperators.uf_mock_teleop import UFMockTeleop
 from ufactory_lerobot.teleoperators.base_teleop import UFBaseTeleop
-from ufactory_lerobot.utils.utils import instantiate_from_dict
+from ufactory_lerobot.utils.utils import instantiate_from_dict, init_keyboard_listener
     
 
 @safe_stop_image_writer
@@ -239,31 +240,71 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
     if teleop is not None:
         teleop.connect()
 
-    listener, events = init_keyboard_listener()
+    is_evt = not is_headless()
+    is_uf_teleop = isinstance(teleop, UFBaseTeleop)
+    is_recorded = False
+    key_dict = {}
+    events = {"exit_early": False, "rerecord_episode": False, "stop_recording": False}
 
-    print("\n********** Episode Record Loop Start **********")
+    if is_evt:
+        from pynput import keyboard
 
-    if isinstance(teleop, UFBaseTeleop):
-        # if getattr(cfg.robot, 'rx_continuous', False):
-        #     def frame_callback(frame):
-        #         if frame['action'][3] < 0:
-        #             frame['action'][3] += 2 * math.pi
-        #         if frame['observation.state'][3] < 0:
-        #             frame['observation.state'][3] += 2 * math.pi
-        #         return frame
-        # else:
-        #     frame_callback = None
-        frame_callback = None
-        input('\nPress Enter to record this episode >>>>> ')
-        time.sleep(0.5)
-        teleop.set_ctrl_status(True)
-        time.sleep(0.5)
+        key_dict = {
+            keyboard.Key.space: 0,  # start
+            keyboard.Key.enter: 0,  # help
+        }
+
+        def on_press(key):
+            try:
+                if key == keyboard.Key.right:
+                    print("Right arrow key pressed. Exiting loop...")
+                    events["exit_early"] = True
+                elif key == keyboard.Key.left:
+                    print("Left arrow key pressed. Exiting loop and rerecord the last episode...")
+                    events["rerecord_episode"] = True
+                    events["exit_early"] = True
+                elif key == keyboard.Key.esc:
+                    print("Escape key pressed. Stopping data recording...")
+                    events["stop_recording"] = True
+                    events["exit_early"] = True
+            except Exception as e:
+                print(f"Error handling key press: {e}")
+            if key in key_dict:
+                key_dict[key] = True
+
+        def on_release(key):
+            try:
+                if key == keyboard.Key.enter:
+                    if not is_recorded:
+                        print('[HELP] <ESC>: EXIT, <SPACE>: START, <LEFT ARROW>: RESET, <RIGH ARROW>: SAVE')
+                    else:
+                        print('[HELP] <ESC>: EXIT, <LEFT ARROW>: RESET, <RIGH ARROW>: SAVE')
+                    # is_recorded = True
+            except Exception as e:
+                print(f"Error handling key release: {e}")
+            if key in key_dict:
+                key_dict[key] = False
+
+        listener, events = init_keyboard_listener(events=events, on_press=on_press, on_release=on_release)
+        print("\n********** Episode Record Loop Start **********")
+        print('[HELP] <ESC>: EXIT, <SPACE>: START, <LEFT ARROW>: RESET, <RIGH ARROW>: SAVE')
     else:
-        frame_callback = None
+        input('[HELP] Enter to to start record >>> ')
+        if is_uf_teleop:
+            teleop.set_teleop_enabled(True)
+        is_recorded = True
+        print("\n********** Episode Record Loop Start **********")
+
+    frame_callback = None
 
     with VideoEncodingManager(dataset):
         recorded_episodes = 0
         while recorded_episodes < cfg.dataset.num_episodes and not events["stop_recording"]:
+            time.sleep(0.01)
+            if is_evt:
+                if not is_recorded and key_dict[keyboard.Key.space]:
+                    is_recorded = True
+
             if teleop is not None and isinstance(teleop, UFMockTeleop):
                 if events["stop_recording"]:
                     continue
@@ -275,52 +316,65 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
                     continue
                 if events["stop_recording"]:
                     continue
+                is_recorded = True
 
-            log_say(f"Recording episode {dataset.num_episodes}", cfg.play_sounds)
-            record_loop(
-                robot=robot,
-                events=events,
-                fps=cfg.dataset.fps,
-                teleop_action_processor=teleop_action_processor,
-                robot_action_processor=robot_action_processor,
-                robot_observation_processor=robot_observation_processor,
-                teleop=teleop,
-                policy=policy,
-                preprocessor=preprocessor,
-                postprocessor=postprocessor,
-                dataset=dataset,
-                control_time_s=cfg.dataset.episode_time_s,
-                single_task=cfg.dataset.single_task,
-                display_data=cfg.display_data,
-                frame_callback=frame_callback,
-            )
-
+            if is_recorded:
+                events["rerecord_episode"] = False
+                events["exit_early"] = False
+                if is_uf_teleop:
+                    robot.configure()
+                    obs = robot.get_observation()
+                    teleop.set_teleop_enabled(True, obs)
+                log_say(f"Recording episode {dataset.num_episodes}", cfg.play_sounds)
+                record_loop(
+                    robot=robot,
+                    events=events,
+                    fps=cfg.dataset.fps,
+                    teleop_action_processor=teleop_action_processor,
+                    robot_action_processor=robot_action_processor,
+                    robot_observation_processor=robot_observation_processor,
+                    teleop=teleop,
+                    policy=policy,
+                    preprocessor=preprocessor,
+                    postprocessor=postprocessor,
+                    dataset=dataset,
+                    control_time_s=cfg.dataset.episode_time_s,
+                    single_task=cfg.dataset.single_task,
+                    display_data=cfg.display_data,
+                    frame_callback=frame_callback,
+                )
+            else:
+                continue
+            if events['stop_recording']:
+                break
             if events["rerecord_episode"]:
                 log_say("Re-record episode", cfg.play_sounds)
                 events["rerecord_episode"] = False
                 events["exit_early"] = False
-                if isinstance(teleop, UFBaseTeleop):
-                    teleop.set_ctrl_status(False)
-                dataset.clear_episode_buffer()
-                input('\nPress Enter to rerecord this episode >>>>> ')
-
-                if isinstance(teleop, UFBaseTeleop):
-                    robot.configure()
-                    time.sleep(0.5)
-                    teleop.set_ctrl_status(True)
-                    time.sleep(0.5)
+                if is_uf_teleop:
+                    teleop.set_teleop_enabled(False)
+                if dataset.episode_buffer:
+                    dataset.clear_episode_buffer()
+                is_recorded = False
+                if is_evt:
+                    print('[HELP] <ESC>: EXIT, <SPACE>: START, <LEFT ARROW>: RESET, <RIGH ARROW>: SAVE')
+                else:
+                    input('\nPress Enter to rerecord this episode >>>>> ')
+                    is_recorded = True
                 continue
 
-            if not events['stop_recording']:
-                if isinstance(teleop, UFBaseTeleop):
-                    teleop.set_ctrl_status(False)
+            if is_recorded and not events['stop_recording']:
+                log_say(f"Save episode {dataset.num_episodes}", cfg.play_sounds)
+                if is_uf_teleop:
+                    teleop.set_teleop_enabled(False)
                 dataset.save_episode()
                 recorded_episodes += 1
-                input('Press Enter to record at the next episode >>>>> ')
-                if isinstance(teleop, UFBaseTeleop):
-                    robot.configure()
-                    time.sleep(1)
-                    teleop.set_ctrl_status(True)
+                is_recorded = False
+                if is_evt:
+                    print('[HELP] <ESC>: EXIT, <SPACE>: START, <LEFT ARROW>: RESET, <RIGH ARROW>: SAVE')
+                else:
+                    input('Press Enter to record at the next episode >>>>> ')
+                    is_recorded = True
 
     print("\n********** Episode Record Loop Exit **********")
 
@@ -328,7 +382,7 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
     if teleop is not None:
         teleop.disconnect()
 
-    if not is_headless() and listener is not None:
+    if is_evt and listener is not None:
         listener.stop()
 
     if cfg.dataset.push_to_hub:

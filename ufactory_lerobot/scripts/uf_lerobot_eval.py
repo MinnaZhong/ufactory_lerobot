@@ -27,7 +27,6 @@ from lerobot.robots import (  # noqa: F401
 )
 from lerobot.utils.control_utils import (
     is_headless,
-    init_keyboard_listener,
     predict_action,
 )
 from lerobot.utils.import_utils import register_third_party_plugins
@@ -40,7 +39,7 @@ from lerobot.configs import parser
 from lerobot.configs.policies import PreTrainedConfig
 from lerobot.scripts.lerobot_record import DatasetRecordConfig
 from lerobot.datasets.lerobot_dataset import LeRobotDataset
-from ufactory_lerobot.utils.utils import instantiate_from_dict
+from ufactory_lerobot.utils.utils import instantiate_from_dict, init_keyboard_listener
 from ufactory_lerobot.devices.umi.vive_tracker.transformations import Transformations
 
 
@@ -74,8 +73,8 @@ def compute_relative_axis_angle(rot_prev, rot_curr):
     返回: 相对轴角向量
     """
     # 1. 转为矩阵
-    R_prev = Transformations.rxryrz_to_matrix(rot_prev)
-    R_curr = Transformations.rxryrz_to_matrix(rot_curr)
+    R_prev = Transformations.rxryrz_to_rotation_matrix(rot_prev)
+    R_curr = Transformations.rxryrz_to_rotation_matrix(rot_curr)
     
     # 2. 计算相对旋转矩阵
     # R_delta 表示从 prev 坐标系到 curr 坐标系的旋转
@@ -88,8 +87,8 @@ def compute_target_axis_angle(rot_prev, rot_delta):
     """
     根据起始轴角和相对轴角计算目标轴角
     """
-    R_prev = Transformations.rxryrz_to_matrix(rot_prev)
-    R_delta = Transformations.rxryrz_to_matrix(rot_delta)
+    R_prev = Transformations.rxryrz_to_rotation_matrix(rot_prev)
+    R_delta = Transformations.rxryrz_to_rotation_matrix(rot_delta)
     R_curr = R_prev @ R_delta
     # R_curr = R_prev.apply(R_delta)
     return Transformations.rotation_matrix_to_rxryrz(R_curr)
@@ -122,7 +121,7 @@ class EvalConfig:
         return ["policy"]
 
 
-def eval_loop(cfg: EvalConfig, relative=False):
+def eval_loop(cfg: EvalConfig, relative=False, rx_continuous=False):
     init_logging()
     logging.info(pformat(asdict(cfg)))
 
@@ -238,8 +237,6 @@ def eval_loop(cfg: EvalConfig, relative=False):
     print("\n********** Policy Eval Episode Loop Start **********")
     print(f'relative: {relative}')
 
-    rx_continuous = getattr(cfg.robot, 'rx_continuous', False)
-
     # with torch.no_grad(), torch.autocast(device_type=device.type) if cfg.policy.use_amp else nullcontext():
     while True:
         robot.configure()
@@ -278,8 +275,7 @@ def eval_loop(cfg: EvalConfig, relative=False):
 
             # Get robot observation
             obs = robot.get_observation()
-            # if rx_continuous and not relative and 'pose.rx' in obs and obs['pose.rx'] < 0:
-            #     obs['pose.rx'] += 2 * math.pi
+
             curr_robot_dict = {}
             curr_action_dict = {}
             for key in keys:
@@ -425,6 +421,7 @@ def main():
     parser.add_argument('--policy.path', type=str, required=True, 
                        help='configuration file path, e.g.my_config.yaml')
     parser.add_argument('--relative', action='store_true', help='is relative motion or not')
+    parser.add_argument('--rx_continuous', action='store_true', help='rx continuous or not')
     args = parser.parse_args()
     try:
         with open(args.config, 'r') as f:
@@ -436,7 +433,7 @@ def main():
         config = instantiate_from_dict(cfg)
 
         eval_cfg = EvalConfig(robot=config["RobotConfig"], dataset=config["DatasetRecordConfig"])
-        eval_loop(eval_cfg, args.relative)
+        eval_loop(eval_cfg, args.relative, args.rx_continuous)
 
 
 if __name__ == "__main__":

@@ -46,3 +46,6 @@ class UFMockTeleopConfig(TeleoperatorConfig):
     gripper_freq: int = 50  # Hz
     gripper_open: int = 800
     gripper_close: int = 0
+
+    def __post_init__(self):
+        self.id = 'uf_mock_teleop' if self.id is None else self.id

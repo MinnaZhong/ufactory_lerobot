@@ -21,8 +21,11 @@ class UFMockRobotConfig(RobotConfig):
 
     robot_dof: int | None = None  # Set it correctly if controlling in joint space!
     control_space: str = "joint"
-    gripper_control: bool = True
     gripper_type: int = 1           # 1: xArm Gripper, 10: Pika Gripper
     observe_joint_vel: bool = False # only effective in joint control mode
     teleop:  None = None # from lerobot.teleoperators import Teleoperator
     state_offset_action: int = 3    # the number of previous teleop actions to be included in the observation
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.id = 'uf_mock_robot' if self.id is None else self.id

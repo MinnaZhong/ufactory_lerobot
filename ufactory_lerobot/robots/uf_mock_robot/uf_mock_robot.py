@@ -38,7 +38,7 @@ class UFMockRobot(Robot):
 
         self.cameras = make_cameras_from_configs(config.cameras)
 
-        self._gripper_type = 0 if not self.config.gripper_control else self.config.gripper_type if self.config.gripper_type > 0 else 1
+        self._gripper_type = self.config.gripper_type
 
     @property
     def _robot_state_features(self)-> dict:

@@ -6,3 +6,7 @@ from .uf_mock_robot_config import UFMockRobotConfig
 @dataclass
 class MultipleUFMockRobotConfig(RobotConfig):
     robots: dict[str, UFMockRobotConfig]
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.id = 'multiple_uf_mock_robot' if self.id is None else self.id

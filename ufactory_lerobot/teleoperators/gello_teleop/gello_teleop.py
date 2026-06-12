@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import logging
 import time
+import math
 import numpy as np
 from gello.dynamixel.driver import DynamixelDriver
 from gello.agents.gello_agent import GelloAgent, DynamixelRobotConfig
@@ -36,8 +37,9 @@ class GelloTeleop(UFBaseTeleop):
         curr_joints = driver.get_joints()
         driver.close()
         joint_offsets = []
-        for i in range(len(self.config.start_joints)):
-            offset = curr_joints[i] - self.config.start_joints[i] / self.config.joint_signs[i]
+        start_joints = list(map(math.radians, self.config.start_joints))
+        for i in range(len(start_joints)):
+            offset = curr_joints[i] - start_joints[i] / self.config.joint_signs[i]
             joint_offsets.append(offset)
         if self.config.gripper_id >= 0:
             gripper_config = [self.config.gripper_id, np.rad2deg(curr_joints[-1]) - 0.2, np.rad2deg(curr_joints[-1]) - 42]
@@ -52,7 +54,7 @@ class GelloTeleop(UFBaseTeleop):
         }
         self._dynamixel_robo_config = DynamixelRobotConfig(**param_dict)
         print(self._dynamixel_robo_config)
-        self.dof = len(self.config.start_joints)
+        self.dof = len(start_joints)
 
         if self.config.torque_joint_ids:
             driver = DynamixelDriver(self.config.torque_joint_ids, port=self.config.port, baudrate=57600)

@@ -87,8 +87,14 @@ class UFRobot(Robot, Thread):
         self._max_joint_velocity = math.radians(self.config.max_joint_velocity)
         self._max_linear_velocity = self.config.max_linear_velocity
 
-        self._start_tcp_pose = self.config.start_tcp_pose
-        self._start_joints = self.config.start_joints
+        if self.config.start_tcp_pose and len(self.config.start_tcp_pose) >= 6:
+            self._start_tcp_pose = list(self.config.start_tcp_pose[:3]) + list(map(math.radians, self.config.start_tcp_pose[3:6]))
+        else:
+            self._start_tcp_pose = None
+        if self.config.start_joints:
+            self._start_joints = list(map(math.radians, self.config.start_joints))
+        else:
+            self._start_joints = None
 
         self.report_stop_event = Event()
         self._rt_report_normal = False
@@ -97,7 +103,7 @@ class UFRobot(Robot, Thread):
         self._cart_obs_has_vel = any('velo.' in key for key in CARTESIAN_OBS_KEYS)
         self._jnt_obs_has_vel = self.config.observe_joint_vel
 
-        self._gripper_type = 0 if not self.config.gripper_control else self.config.gripper_type
+        self._gripper_type = self.config.gripper_type
         if self._gripper_type == GripperType.xArmGripper:
             gripper_speed = 5000 if self.config.gripper_speed < 0 else min(max(50, self.config.gripper_speed), 5000)
             gripper_force = 50 if self.config.gripper_force < 0 else self.config.gripper_force # # not support
@@ -198,6 +204,8 @@ class UFRobot(Robot, Thread):
         if calibrate:  
             self.calibrate()
 
+        self.real_arm.set_linear_spd_limit_factor(2.0)
+
         self._is_connected = True
 
     def configure(self) -> None:
@@ -206,22 +214,6 @@ class UFRobot(Robot, Thread):
         self.real_arm.set_mode(0)  # set to idle mode
         self.real_arm.set_state(0)  # set to start state
         time.sleep(0.5)
-        if self._start_tcp_pose is None:
-            self.real_arm.set_servo_angle(angle=self._start_joints, is_radian=True, wait=True)
-        else:
-            self.real_arm.set_servo_angle(angle=self._start_joints, is_radian=True, wait=True)
-            self.real_arm.set_position(*self._start_tcp_pose, speed=100, is_radian=True, wait=True)
-            _, self._start_joints = self.real_arm.get_servo_angle(is_radian=True)
-            self._start_tcp_pose = None
-
-        if self._control_space == "joint":
-            self.real_arm.set_mode(6) 
-        elif self._control_space == "cartesian":
-            self.real_arm.set_mode(7)
-        else:
-            raise ValueError(f"Please check the given control space of uf_robot! got {self._control_space}")
-
-        self.real_arm.set_state(0)
 
         _, err_warn = self.real_arm.get_err_warn_code()
         if err_warn[0] != 0:
@@ -259,6 +251,26 @@ class UFRobot(Robot, Thread):
             if err_warn[0] != 0:
                 raise RuntimeError(f"Failed to set correct state to Gripper! Controller Error code: {err_warn[0]} !")
         
+        if self._start_joints is not None:
+            self.real_arm.set_servo_angle(angle=self._start_joints, is_radian=True, wait=True)
+        if self._start_tcp_pose is not None:
+            self.real_arm.set_position(*self._start_tcp_pose, speed=100, is_radian=True, wait=True)
+            _, self._start_joints = self.real_arm.get_servo_angle(is_radian=True)
+            self._start_tcp_pose = None
+
+        if self._control_space == "joint":
+            self.real_arm.set_mode(6)
+        elif self._control_space == "cartesian":
+            self.real_arm.set_mode(7)
+        else:
+            raise ValueError(f"Please check the given control space of uf_robot! got {self._control_space}")
+
+        self.real_arm.set_state(0)
+
+        _, err_warn = self.real_arm.get_err_warn_code()
+        if err_warn[0] != 0:
+            raise RuntimeError(f"Failed to set correct state to UF robot! Controller Error code: {err_warn[0]} !")
+
         if self._use_rt_report and not self._rt_report_normal:
             self.start()
         time.sleep(0.2)

@@ -9,3 +9,7 @@ class MultipleUFRobotConfig(RobotConfig):
     async_connect: bool = True
     async_configure: bool = True
     async_action: bool = False
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.id = 'multiple_uf_robot' if self.id is None else self.id

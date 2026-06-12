@@ -23,3 +23,6 @@ from .umi_teleop_config import UmiTeleopConfig
 @dataclass
 class MultipleUmiTeleopConfig(TeleoperatorConfig):
     teleops: dict[str, UmiTeleopConfig]
+
+    def __post_init__(self):
+        self.id = 'multiple_umi_teleop' if self.id is None else self.id

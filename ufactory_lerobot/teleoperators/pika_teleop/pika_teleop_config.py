@@ -15,18 +15,20 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-
+from typing import Tuple
 from lerobot.teleoperators import TeleoperatorConfig
 
 
 @TeleoperatorConfig.register_subclass("uf::pika_teleop")
 @dataclass
 class PikaTeleopConfig(TeleoperatorConfig):
-    # robot_ip to connect to the arm
-    robot_ip: str = None
     # Port to connect to the pika
     port: str = None
     frequency: int = 100 # hz
     use_gripper: bool = True
-    scale_xyz: float = 1.0 #
-    rx_continuous: bool = False
+    scale_xyz: float = 1.0
+    tracker_to_robot_eef: Tuple[float, ...] = (0, 0, 0, 180, -90, 0)    # [x, y, z, roll(°), pitch(°), yaw(°)]
+    robot_base_pose: Tuple[float, ...] = (400, 0, 400, 180, 0, 0)       # [x, y, z, roll(°), pitch(°), yaw(°)]
+
+    def __post_init__(self):
+        self.id = 'pika_teleop' if self.id is None else self.id

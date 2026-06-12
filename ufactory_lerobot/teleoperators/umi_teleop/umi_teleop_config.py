@@ -16,7 +16,6 @@
 
 from dataclasses import dataclass
 from typing import Tuple
-import numpy as np
 from lerobot.teleoperators import TeleoperatorConfig
 
 
@@ -24,12 +23,11 @@ from lerobot.teleoperators import TeleoperatorConfig
 @dataclass
 class UmiTeleopConfig(TeleoperatorConfig):
     serial_number: str
-    init_slam: bool = True
-    init_clamp_stream: bool = True
-    init_color_camera: bool = False
-    init_fisheye_cameras: bool = False
     use_gripper: bool = True
     use_vive_tracker: bool = False
     vive_tracker_id: str = 'WM0'
-    tracker_to_robot_eef: Tuple[float, ...] = (0, 0, 0, 0, 0, -np.pi/2)
-    robot_base_pose: Tuple[float, ...] = (300, 0, 300, np.pi, -np.pi/2, 0)
+    tracker_to_robot_eef: Tuple[float, ...] = (0, 0, 0, 0, 0, -90)  # [x, y, z, roll(°), pitch(°), yaw(°)]
+    robot_base_pose: Tuple[float, ...] = (300, 0, 300, 180, -90, 0) # [x, y, z, roll(°), pitch(°), yaw(°)]
+
+    def __post_init__(self):
+        self.id = 'umi_teleop' if self.id is None else self.id
