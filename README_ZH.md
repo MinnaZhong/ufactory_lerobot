@@ -76,7 +76,7 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 ```bash
 # 1. 安装 XVSDK（系统级依赖，仅支持 Ubuntu Focal）
-sudo dpkg -i src/xvsdk/XVSDK_focal_amd64.deb
+curl -sL https://raw.githubusercontent.com/xArm-Developer/ufactory_resources/main/fastumi/sdk/XVSDK_focal_amd64.deb -o /tmp/xvsdk.deb && sudo dpkg -i /tmp/xvsdk.deb
 sudo apt install -y --fix-broken
 
 # 2. 安装外设依赖

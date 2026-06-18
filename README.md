@@ -78,7 +78,7 @@ Universal Manipulation Interface + Vive Tracker, supports dual-arm.
 
 ```bash
 # 1. Install XVSDK (system-level, Ubuntu Focal only)
-sudo dpkg -i src/xvsdk/XVSDK_focal_amd64.deb
+curl -sL https://raw.githubusercontent.com/xArm-Developer/ufactory_resources/main/fastumi/sdk/XVSDK_focal_amd64.deb -o /tmp/xvsdk.deb && sudo dpkg -i /tmp/xvsdk.deb
 sudo apt install -y --fix-broken
 
 # 2. Install peripheral deps
