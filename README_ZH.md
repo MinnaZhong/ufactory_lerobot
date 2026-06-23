@@ -12,37 +12,19 @@ UFACTORY(深圳市众为创造科技有限公司) 机械臂与 LeRobot 框架集
 <tr>
   <td width="50%">
     <a href="https://www.bilibili.com/video/BV12xFjzzEaX" target="_blank">
-      <div style="position: relative;">
-        <img src="http://i2.hdslb.com/bfs/archive/7b325df5fb4c16e922b66d27b56d8fb6534f8b46.jpg" width="100%">
-        <svg style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;" width="44" height="44" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r="30" fill="rgba(0,0,0,0.5)" stroke="white" stroke-width="2"/>
-          <polygon points="24,18 24,46 46,32" fill="white"/>
-        </svg>
-      </div>
+      <img src="https://i2.hdslb.com/bfs/archive/7b325df5fb4c16e922b66d27b56d8fb6534f8b46.jpg" width="100%">
     </a>
   </td>
   <td width="50%">
     <a href="https://www.bilibili.com/video/BV16ccizHE2P" target="_blank">
-      <div style="position: relative;">
-        <img src="http://i2.hdslb.com/bfs/archive/8c5d5e9370577fa89d06a175aceea282d9b2eb9a.jpg" width="100%">
-        <svg style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;" width="44" height="44" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r="30" fill="rgba(0,0,0,0.5)" stroke="white" stroke-width="2"/>
-          <polygon points="24,18 24,46 46,32" fill="white"/>
-        </svg>
-      </div>
+      <img src="https://i2.hdslb.com/bfs/archive/8c5d5e9370577fa89d06a175aceea282d9b2eb9a.jpg" width="100%">
     </a>
   </td>
 </tr>
 <tr>
   <td width="50%">
     <a href="https://www.bilibili.com/video/BV1xGEy6mE3i" target="_blank">
-      <div style="position: relative;">
-        <img src="http://i2.hdslb.com/bfs/archive/c8bbac04a736b7043a20b753e11afea7627bdae2.jpg" width="100%">
-        <svg style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;" width="44" height="44" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r="30" fill="rgba(0,0,0,0.5)" stroke="white" stroke-width="2"/>
-          <polygon points="24,18 24,46 46,32" fill="white"/>
-        </svg>
-      </div>
+      <img src="https://i2.hdslb.com/bfs/archive/c8bbac04a736b7043a20b753e11afea7627bdae2.jpg" width="100%">
     </a>
   </td>
 </tr>

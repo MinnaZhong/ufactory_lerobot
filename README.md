@@ -12,37 +12,19 @@ UFACTORY robot arm integration with the LeRobot framework for robot learning, da
 <tr>
   <td width="50%">
     <a href="https://www.youtube.com/watch?v=wTiWLiHciT8" target="_blank">
-      <div style="position: relative;">
-        <img src="https://img.youtube.com/vi/wTiWLiHciT8/maxresdefault.jpg" width="100%">
-        <svg style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;" width="44" height="44" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r="30" fill="rgba(0,0,0,0.5)" stroke="white" stroke-width="2"/>
-          <polygon points="24,18 24,46 46,32" fill="white"/>
-        </svg>
-      </div>
+      <img src="https://img.youtube.com/vi/wTiWLiHciT8/maxresdefault.jpg" width="100%">
     </a>
   </td>
   <td width="50%">
     <a href="https://www.youtube.com/watch?v=IiyvewZh5OY" target="_blank">
-      <div style="position: relative;">
-        <img src="https://img.youtube.com/vi/IiyvewZh5OY/maxresdefault.jpg" width="100%">
-        <svg style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;" width="44" height="44" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r="30" fill="rgba(0,0,0,0.5)" stroke="white" stroke-width="2"/>
-          <polygon points="24,18 24,46 46,32" fill="white"/>
-        </svg>
-      </div>
+      <img src="https://img.youtube.com/vi/IiyvewZh5OY/maxresdefault.jpg" width="100%">
     </a>
   </td>
 </tr>
 <tr>
   <td width="50%">
-    <a href="https://www.bilibili.com/video/BV1xGEy6mE3i" target="_blank">
-      <div style="position: relative;">
-        <img src="http://i2.hdslb.com/bfs/archive/c8bbac04a736b7043a20b753e11afea7627bdae2.jpg" width="100%">
-        <svg style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none;" width="44" height="44" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r="30" fill="rgba(0,0,0,0.5)" stroke="white" stroke-width="2"/>
-          <polygon points="24,18 24,46 46,32" fill="white"/>
-        </svg>
-      </div>
+    <a href="https://youtu.be/wBwZH6POk38" target="_blank">
+      <img src="https://img.youtube.com/vi/wBwZH6POk38/maxresdefault.jpg" width="100%">
     </a>
   </td>
 </tr>
@@ -201,7 +183,7 @@ lerobot-train --policy act --dataset your_dataset_name
 lerobot-train --policy act --dataset ufactory/xarm6_umi_datas
 ```
 
-Full parameters example:
+Important parameters:
 
 ```bash
 # Note: repo_id is the same as in the record config
